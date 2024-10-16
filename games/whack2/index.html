@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whack-a-Monkey: The Game</title>
+    <style>
+        body {
+            background-color: darkblue; /* Light background for the game */
+            color: greenyellow; /* Text color */
+            margin: 0; /* Remove default margin */
+            text-align: center; /* Center all text in the body */
+        }
+        h1 {
+            margin-bottom: 20px; /* Add some space below the header */
+        }
+        .game-container {
+            width: 600px;
+            height: 400px;
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 auto;
+        }
+        .hole {
+            width: 200px;
+            height: 175px;
+            background-color: maroon; /* Circle color */
+            border-radius: 75%; /* Makes the div a circle */
+            background-size: contain;
+            position: relative; /* Set position relative for absolute children */
+            overflow: hidden; /* Ensure moles do not overflow the hole */
+        }
+        .mole {
+            width: 100%; /* Full width of the hole */
+            height: 100%; /* Full height of the hole */
+            background: url('images/mole.png') bottom center no-repeat;
+            background-size: 60%;
+            position: absolute; /* Position mole absolutely within the hole */
+            top: 100%; /* Start below the hole */
+            transition: top 0.3s, opacity 0.3s; /* Add transition for opacity */
+            opacity: 0; /* Start invisible */
+            pointer-events: none; /* Make unclickable when invisible */
+        }
+        .hole.up .mole {
+            top: 0; /* Move mole into the hole */
+            opacity: 1; /* Make visible when mole is up */
+            pointer-events: auto; /* Make clickable when visible */
+        }
+
+        .scoreboard {
+            text-align: center; /* Center text in the scoreboard */
+            margin-bottom: 20px; /* Add some space below the scoreboard */
+        }
+
+        .circle {
+            width: 500px; /* Diameter of the circle */
+            height: 100px; /* Diameter of the circle */
+            background-color: darkblue; /* Circle color */
+            border-radius: 50%; /* Makes the div a circle */
+            display: flex; /* Center text */
+            align-items: center; /* Center text vertically */
+            justify-content: center; /* Center text horizontally */
+            cursor: pointer; /* Change cursor to pointer on hover */
+        }
+        
+        .circle-text {
+            color: darkblue; /* Initial text color */
+            font-size: 16px; /* Text size */
+            transition: color 0.3s; /* Smooth transition for color change */
+            text-decoration: none; /* Remove underline from the link */
+        }
+
+        .circle-text:hover {
+            color: blue; /* Color when hovered */
+        }
+
+        /* ... existing slider styles ... */
+    </style>
+</head>
+<body>
+    <h1>Whack-a-Monkey</h1>
+    <div class="game-container">
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+    </div>
+    <div class="scoreboard">
+        <button id="startGame">Start Game</button>
+        <button id="stopGame" disabled>Stop Game</button>
+        <p>Score: <span id="score">0</span></p>
+        <p>Time Left: <span id="time-left">60</span> seconds</p>
+        <div>
+            <label for="sound-volume">Sound Volume:</label>
+            <input type="range" id="sound-volume" min="0" max="1" step="0.1" value="1">
+        </div>
+        <div>
+            <label for="music-volume">Music Volume:</label>
+            <input type="range" id="music-volume" min="0" max="1" step="0.1" value="1">
+        </div>
+    </div>
+
+    <div class="circle">
+        <a href="levelup.html" class="circle-text">"Congrats, you've found the secret message! What are you gonna do next?</a> <!-- Text element inside the circle -->
+    </div>
+
+    <script>
+        const holes = document.querySelectorAll('.hole');
+        const moles = document.querySelectorAll('.mole');
+        const scoreBoard = document.querySelector('#score');
+        const timeLeft = document.querySelector('#time-left');
+        const startButton = document.querySelector('#startGame');
+        const stopButton = document.querySelector('#stopGame');
+
+        const moleImages = [
+            'images/monkey1.jpg', // Actual mole image 1
+            'images/monkey2.jpg', // Actual mole image 2
+            'images/monkey3.jpg'  // Actual mole image 3
+        ]; // Use your actual mole images here
+
+        const audioFiles = [
+            'audio/monkey_whack.wav'  // Actual audio file 3
+        ]; // Use your actual audio files here
+
+        const backgroundMusic = new Audio('audio/whackamonkey_musicloop1.wav'); // Replace with your actual music file path
+        backgroundMusic.loop = true; // Set the music to loop
+
+        let lastHole;
+        let timeUp = false;
+        let score = 0;
+        let countdown;
+        let timer; // Declare timer variable in the outer scope
+
+        function randomTime(min, max) {
+            return Math.round(Math.random() * (max - min) + min);
+        }
+
+        function randomHole(holes) {
+            const idx = Math.floor(Math.random() * holes.length);
+            const hole = holes[idx];
+            if (hole === lastHole) {
+                return randomHole(holes);
+            }
+            lastHole = hole;
+            return hole;
+        }
+
+        function peep() {
+            const time = randomTime(200, 1000);
+            const hole = randomHole(holes);
+            const moleImage = moleImages[Math.floor(Math.random() * moleImages.length)];
+            hole.querySelector('.mole').style.backgroundImage = `url('${moleImage}')`; // Set random mole image
+            hole.classList.add('up');
+            setTimeout(() => {
+                hole.classList.remove('up');
+                if (!timeUp) peep();
+            }, time);
+        }
+
+        function playRandomSound() {
+            const soundFile = audioFiles[Math.floor(Math.random() * audioFiles.length)];
+            const audio = new Audio(soundFile);
+            audio.volume = soundVolumeSlider.value; // Set volume from slider
+            audio.play();
+        }
+
+        function startGame() {
+            timeUp = false; // Reset timeUp to false
+            scoreBoard.textContent = 0;
+            score = 0;
+            peep();
+            countdown = 60; // Reset countdown
+            timeLeft.textContent = countdown;
+            startButton.disabled = true; // Disable the start button
+            stopButton.disabled = false; // Enable the stop button
+
+            backgroundMusic.currentTime = 0; // Reset music to start
+            backgroundMusic.play(); // Start playing music
+
+            timer = setInterval(() => {
+                countdown--;
+                timeLeft.textContent = countdown; // Update displayed time
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    timeUp = true; // Set game as over
+                    startButton.disabled = false; // Enable the start button
+                    stopButton.disabled = true; // Disable the stop button
+                    backgroundMusic.pause(); // Stop the music
+                    backgroundMusic.currentTime = 0; // Reset to the beginning
+                }
+            }, 1000);
+        }
+
+        function stopGame() {
+            timeUp = true; // Set timeUp to true to stop the game
+            clearInterval(timer); // Stop the countdown timer
+            startButton.disabled = false; // Enable the start button
+            stopButton.disabled = true; // Disable the stop button
+            backgroundMusic.pause(); // Stop the background music
+            moles.forEach(mole => mole.classList.remove('up')); // Hide all moles
+        }
+
+        function bonk(e) {
+            if(!e.isTrusted) return;
+            score++;
+            this.parentNode.classList.remove('up');
+            scoreBoard.textContent = score;
+            playRandomSound(); // Play random sound on click
+        }
+
+        moles.forEach(mole => mole.addEventListener('click', bonk));
+        startButton.addEventListener('click', startGame);
+        stopButton.addEventListener('click', stopGame); // Stop button event listener
+
+        const soundVolumeSlider = document.getElementById('sound-volume');
+        const musicVolumeSlider = document.getElementById('music-volume');
+
+        // Set initial volume levels
+        soundVolumeSlider.addEventListener('input', () => {
+            const volume = soundVolumeSlider.value;
+            // Adjust volume for all audio elements
+            moles.forEach(mole => {
+                mole.audioVolume = volume; // Set volume for each mole's sound
+            });
+        });
+
+        musicVolumeSlider.addEventListener('input', () => {
+            backgroundMusic.volume = musicVolumeSlider.value; // Set music volume from slider
+        });
+
+        continueGameButton.addEventListener('click', continueGame); // Add event listener for Continue Game button
+
+    </script>
+</body>
+</html>

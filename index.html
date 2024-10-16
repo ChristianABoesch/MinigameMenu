@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minigame Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+        .menu {
+            margin-top: 50px;
+        }
+        .game {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 10px;
+            display: inline-block;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none; /* Remove underline */
+            color: inherit; /* Use the color of the parent element */
+        }
+        .game:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Christian McBistian's Games</h1>
+
+    <h2>Menu</h2>
+    <ul style="list-style-type: none; padding: 0;">
+        <li><div class="game" onclick="window.location.href='games/whack2/index.html'">Whack-a-Monkey</div></li>
+        <li><div class="game" onclick="window.location.href='games/snakegame/snake.html'">Snake Game</div></li>
+        <li><div class="game" onclick="window.location.href='games/pong/pong.html'">Pong</div></li>
+        <li><div class="game" onclick="window.location.href='games/basicplatformer/index.html'">Collect ALL the coins!</div></li>
+        <li><div class="game" onclick="window.location.href='games/topdowngame/index.html'">Collect ALL the coins! (and avoid danger)</div></li>
+        <li><div class="game" onclick="window.location.href='games/chooseyourcharacter/index.html'">Choose your character</div></li>
+        <li><div class="game" onclick="window.location.href='games/blindgame/index.html'">The number guessing game</div></li>
+    </ul>
+
+    <script>
+        function startGame(game) {
+            alert("Starting " + game);
+            // Here you can add logic to start the selected game
+        }
+    </script>
+</body>
+</html>
